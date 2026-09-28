@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XAUUSD Dashboard</title>
+  <meta name="description" content="Dashboard trading XAUUSD: chart, indikator, berita, kalender ekonomi, dan rekomendasi trade. Untuk edukasi.">
+  <meta name="theme-color" content="#131722">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">Au</span>
+      <div>
+        <h1>XAU/USD</h1>
+        <small>Emas spot · <span id="mode-tag">-</span></small>
+      </div>
+    </div>
+
+    <div class="ticker" aria-live="polite">
+      <span id="price" class="ticker-price">-</span>
+      <span id="price-change" class="ticker-change">-</span>
+      <span class="ticker-range">H <b id="hi24">-</b> · L <b id="lo24">-</b> <small>(24 jam)</small></span>
+    </div>
+
+    <div class="topbar-right">
+      <div id="hdr-signal" class="sig" data-dir="NEUTRAL" title="Sinyal gabungan">
+        <span class="sig-label">-</span><span class="sig-conf"></span>
+      </div>
+      <button id="btn-refresh" type="button" class="btn ghost" aria-label="Refresh semua data">↻ Refresh</button>
+    </div>
+  </header>
+
+  <div id="demo-banner" class="banner" hidden>
+    Mode DEMO: API key belum diisi, harga dan berita di bawah adalah data contoh, bukan pasar sungguhan. Isi <code>js/config.js</code> (lihat README).
+  </div>
+
+  <!-- Panel rekomendasi -->
+  <section id="rec-card" class="rec" data-dir="NEUTRAL" aria-labelledby="rec-title">
+    <header class="rec-head">
+      <div>
+        <h2 id="rec-title">Menghitung…</h2>
+        <div class="rec-sub"><span id="rec-conf"></span><span id="rec-tf"></span></div>
+      </div>
+      <div class="rec-actions">
+        <button id="btn-copy" type="button" class="btn primary" aria-label="Copy trade setup ke clipboard" disabled>📋 Copy Trade Setup</button>
+        <button id="btn-alert" type="button" class="btn" aria-label="Aktifkan alert harga untuk level ini" disabled>🔔 Set Alert</button>
+        <button id="btn-refresh-analysis" type="button" class="btn ghost">Refresh Analysis</button>
+      </div>
+    </header>
+    <div class="rec-bar"><i id="rec-bar"></i></div>
+    <div id="rec-body" class="rec-body"></div>
+
+    <footer class="rec-foot">
+      <div class="account">
+        <label>Modal ($) <input id="set-capital" type="number" min="10" step="10" inputmode="decimal"></label>
+        <label>Risiko/trade (%) <input id="set-risk" type="number" min="0.1" max="5" step="0.1" inputmode="decimal"></label>
+      </div>
+      <span id="rec-time" class="updated-line"></span>
+      <details class="history">
+        <summary>Riwayat 10 rekomendasi terakhir</summary>
+        <ul id="rec-history"></ul>
+      </details>
+      <p class="fine">⚠️ Rekomendasi ini dihasilkan oleh algoritma otomatis berdasarkan indikator teknis dan sentimen berita. Bukan nasihat keuangan. Selalu verifikasi dengan analisis Anda sendiri sebelum trading. Performa masa lalu tidak menjamin hasil di masa depan.</p>
+    </footer>
+  </section>
+
+  <main class="grid">
+    <div class="col-left">
+      <section id="panel-chart" class="panel">
+        <header class="panel-head">
+          <h2>Chart</h2>
+          <div id="tf-bar" class="seg" role="group" aria-label="Timeframe"></div>
+          <label class="chk"><input type="checkbox" id="tog-ema"> EMA</label>
+          <label class="chk"><input type="checkbox" id="tog-bb"> Bollinger</label>
+          <span class="src"></span><span class="updated"></span>
+        </header>
+        <p class="panel-msg" hidden></p>
+        <div id="chart" class="chart"></div>
+        <ul class="legend" aria-hidden="true">
+          <li><i style="background:#f5a623"></i>EMA 20</li>
+          <li><i style="background:#2962ff"></i>EMA 50</li>
+          <li><i style="background:#e040fb"></i>EMA 200</li>
+        </ul>
+      </section>
+
+      <section id="panel-ind" class="panel">
+        <header class="panel-head">
+          <h2>Indikator teknis</h2>
+          <span class="src"></span><span class="updated"></span>
+        </header>
+        <div id="ind-grid" class="ind-grid"></div>
+      </section>
+    </div>
+
+    <div class="col-right">
+      <section id="panel-news" class="panel">
+        <header class="panel-head">
+          <h2>Berita &amp; sentimen</h2>
+          <span class="src"></span><span class="updated"></span>
+        </header>
+        <p class="panel-msg" hidden></p>
+        <div id="news-gauge" class="gauge" data-tone="neutral">
+          <div class="gauge-top"><span class="gauge-score">-</span><span class="gauge-label">-</span></div>
+          <div class="gauge-track"><i class="gauge-marker"></i></div>
+          <div class="gauge-scale"><span>Bearish</span><span>Netral</span><span>Bullish</span></div>
+        </div>
+        <ul id="news-list" class="news-list"></ul>
+      </section>
+
+      <section id="panel-cal" class="panel">
+        <header class="panel-head">
+          <h2>Kalender ekonomi</h2>
+          <span class="src"></span><span class="updated"></span>
+        </header>
+        <p class="panel-msg" hidden></p>
+        <div id="cal-filters" class="filters">
+          <button type="button" data-impact="High">High</button>
+          <button type="button" data-impact="Medium">Medium</button>
+          <button type="button" data-impact="Low">Low</button>
+          <label class="chk"><input type="checkbox" id="cal-usd"> USD saja</label>
+        </div>
+        <ul id="cal-list" class="cal-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Aplikasi ini hanya untuk tujuan edukasi. Bukan nasihat keuangan. Trading XAUUSD memiliki risiko tinggi. Selalu lakukan riset mandiri dan gunakan manajemen risiko yang ketat.</p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
