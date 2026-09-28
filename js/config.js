@@ -7,10 +7,10 @@
 export const CONFIG = {
   // --- API KEY (isi hanya untuk mode direct / lokal) ---
   API_KEYS: {
-    TWELVEDATA: 'YOUR_TWELVEDATA_KEY',
-    FCS: 'YOUR_FCS_KEY',
+    TWELVEDATA: '35054a7d0e654f03a7ea912594753f41',
+    FCS: 'REWGvR3ZxX8KftCBfbIUAu',
     MARKETAUX: 'YOUR_MARKETAUX_KEY',
-    NEWSAPI: 'YOUR_NEWSAPI_KEY',
+    NEWSAPI: '13c5f83df23e45fda0bc93e9fac1e7ed',
   },
 
   // --- MODE AKSES API ---
